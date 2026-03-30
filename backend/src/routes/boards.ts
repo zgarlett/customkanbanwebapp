@@ -1,7 +1,21 @@
 import { Router, Request, Response } from 'express'
+import mongoose from 'mongoose'
 import { Board } from '../models/Board.js'
 
 const router = Router()
+
+const sanitizeBoardPayload = (payload: { title?: string; description?: string; owner?: unknown }) => {
+  const nextPayload = {
+    title: payload.title,
+    description: payload.description,
+  } as { title?: string; description?: string; owner?: mongoose.Types.ObjectId }
+
+  if (typeof payload.owner === 'string' && mongoose.isValidObjectId(payload.owner)) {
+    nextPayload.owner = new mongoose.Types.ObjectId(payload.owner)
+  }
+
+  return nextPayload
+}
 
 // GET all boards
 router.get('/', async (_req: Request, res: Response) => {
@@ -27,7 +41,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create new board
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const board = new Board(req.body)
+    const board = new Board(sanitizeBoardPayload(req.body))
     await board.save()
     await board.populate('owner', 'name email')
     res.status(201).json(board)
@@ -39,7 +53,7 @@ router.post('/', async (req: Request, res: Response) => {
 // PUT update board
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const board = await Board.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate(
+    const board = await Board.findByIdAndUpdate(req.params.id, sanitizeBoardPayload(req.body), { new: true }).populate(
       'owner',
       'name email'
     )

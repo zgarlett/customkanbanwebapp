@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 export interface IBoard extends Document {
   title: string
   description?: string
-  owner: mongoose.Types.ObjectId
+  owner?: mongoose.Types.ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -22,7 +22,6 @@ const boardSchema = new Schema<IBoard>(
     owner: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
     },
   },
   { timestamps: true }

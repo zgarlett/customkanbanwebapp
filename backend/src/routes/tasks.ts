@@ -15,6 +15,18 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 })
 
+// GET tasks by board
+router.get('/board/:boardId', async (req: Request, res: Response) => {
+  try {
+    const tasks = await Task.find({ board: req.params.boardId })
+      .populate('board', 'title')
+      .populate('assignee', 'name email')
+    res.json(tasks)
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message })
+  }
+})
+
 // GET task by ID
 router.get('/:id', async (req: Request, res: Response) => {
   try {
@@ -60,18 +72,6 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const task = await Task.findByIdAndDelete(req.params.id)
     if (!task) return res.status(404).json({ error: 'Task not found' })
     res.json({ message: 'Task deleted successfully' })
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message })
-  }
-})
-
-// GET tasks by board
-router.get('/board/:boardId', async (req: Request, res: Response) => {
-  try {
-    const tasks = await Task.find({ board: req.params.boardId })
-      .populate('board', 'title')
-      .populate('assignee', 'name email')
-    res.json(tasks)
   } catch (error) {
     res.status(500).json({ error: (error as Error).message })
   }
